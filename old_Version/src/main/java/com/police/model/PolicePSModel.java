@@ -27,7 +27,7 @@ public class PolicePSModel {
     
     public BigDecimal getCaseRecordMaxId()
     {
-        BigDecimal maxxId=new BigDecimal(0);
+        BigDecimal maxxId;
         Session session = sf.openSession();
         
         try{
@@ -35,21 +35,18 @@ public class PolicePSModel {
             Criteria crt=session.createCriteria(CaseRecord.class);
             crt.setProjection(Projections.max("id"));
             maxxId =(BigDecimal)crt.uniqueResult();
-            
-            if(maxxId.equals(null))
-                maxxId=BigDecimal.ZERO;
-            
+            System.out.println("Max ID : "+maxxId);
         }catch(Exception e)
         {
             e.printStackTrace();
-            
+            maxxId=BigDecimal.ZERO;
         }finally {
             if (session != null && session.isOpen()) {
                 session.close();
             }
         }
         
-        System.out.println("Max ID : "+maxxId);
+        
         return maxxId;
     }
     
@@ -138,28 +135,5 @@ public class PolicePSModel {
             }
         }
         return caseDocList;
-    }
-    
-    public boolean insertCaseDoc(CaseDocuments newDoc)
-    {
-        boolean done=false;
-        
-        Session session=sf.openSession();
-        try{
-            session.beginTransaction();
-            session.save(newDoc);
-            session.getTransaction().commit();
-            done=true;
-        }catch(Exception e)
-        {
-            e.printStackTrace();
-            session.getTransaction().rollback();
-        }finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        
-        return done;
     }
 }

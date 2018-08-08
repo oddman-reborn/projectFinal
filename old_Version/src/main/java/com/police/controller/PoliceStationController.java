@@ -111,12 +111,13 @@ public class PoliceStationController {
     public String viewCaseListToDate(Model model, @RequestParam(value = "searchDate") String date) {
         PoliceStationUser user = (PoliceStationUser) session.getAttribute("user");
 
-        Date searchDate = new Date();
-
+        Date searchDate=new Date();
+        
         System.out.println("searchDate :  " + searchDate);
-        try {
-            searchDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-        } catch (Exception e) {
+        try{
+            searchDate=new SimpleDateFormat("yyyy-MM-dd").parse(date);
+        }catch(Exception e)
+        {
             e.printStackTrace();
         }
         String sDate = new SimpleDateFormat("yyyy-MM-dd").format(searchDate);
@@ -125,75 +126,48 @@ public class PoliceStationController {
         model.addAttribute("sDate", sDate);
         return "PoliceStation/caseList";
     }
-
+    
     @RequestMapping(value = "PoliceStation/CaseManagement")
-    public String viewCaseManageMent(@RequestParam(value = "caseId") String caseId, Model model) {
-        CaseRecord caseObj = psModel.getCaseRecordByCaseId(caseId);
-        List<CaseDocuments> caseDocList = psModel.getCaseDocByCaseId(caseId);
-        System.out.println("Doc list Size : " + caseDocList.size());
+    public String viewCaseManageMent(@RequestParam(value = "caseId") String caseId,Model model)
+    {
+        CaseRecord caseObj=psModel.getCaseRecordByCaseId(caseId);
+        List<CaseDocuments> caseDocList=psModel.getCaseDocByCaseId(caseId);
+        System.out.println("Doc list Size : "+caseDocList.size());
         model.addAttribute("caseDocList", caseDocList);
         model.addAttribute("caseObj", caseObj);
         return "PoliceStation/CaseManagement";
     }
-
-    @RequestMapping(value = "addCaseDoc", method = RequestMethod.POST)
-    public String addCaseDoc(@ModelAttribute(value = "CaseDocuments") CaseDocuments CaseDoc) {
+    
+    @RequestMapping(value = "addCaseDoc",method = RequestMethod.POST)
+    public String addCaseDoc(@ModelAttribute(value = "CaseDocuments") CaseDocuments CaseDoc )
+    {
         return "PoliceStation/CaseManagement";
     }
-
-    @RequestMapping(value = "PoliceStation/uploadCaseFile", method = RequestMethod.POST)
-    public @ResponseBody
-    String uploadCaseFile(@RequestParam(value = "file1") MultipartFile file1,
-            @RequestParam(value = "fileName") String fileName,
-            @RequestParam(value = "caseId") String caseId,
-            @RequestParam(value = "fileType") String fileType,
-            HttpServletRequest req) {
-
-        CaseDocuments newDoc = new CaseDocuments();
-        newDoc.setCaseId(caseId);
-        newDoc.setFileName(fileName);
-        newDoc.setFileType(fileType);
+    
+    @RequestMapping(value = "PoliceStation/uploadCaseFile",method = RequestMethod.POST)
+    public @ResponseBody String uploadCaseFile(@RequestParam(value = "file1") MultipartFile file1,
+                                                @RequestParam(value = "fileName") String fileName,
+                                                @RequestParam(value = "caseId") String caseId,
+                                                @RequestParam(value = "fileType") String fileType,
+                                                HttpServletRequest req)
+    {
+        String fileN = file1.getOriginalFilename();
         
-        String root = req.getRealPath("/");
-        String rootPath = root.substring(0, root.indexOf("OnlinePoliceStation"));
-        
-        try {
-            if (newDoc.getFileType().contains("Image")) {
-                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\case_images";
-                String newFileName=caseId + "_" + file1.getOriginalFilename();
-                
-                BufferedOutputStream outputStream = new BufferedOutputStream(
-                                                    new FileOutputStream(
-                                                    new File(rootPath + location, newFileName)));
-                outputStream.write(file1.getBytes());
-                outputStream.flush();
-                outputStream.close();
-                
-                newDoc.setPath(rootPath+location+newFileName);
-                System.out.println("Path : "+newDoc.getPath());
-            } else {
-                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\case_documents\\";
-                String newFileName=caseId + "_" + file1.getOriginalFilename();
-                
-                BufferedOutputStream outputStream = new BufferedOutputStream(
-                                                    new FileOutputStream(
-                                                    new File(rootPath + location, newFileName)));
-                outputStream.write(file1.getBytes());
-                outputStream.flush();
-                outputStream.close();
-                
-                newDoc.setPath(rootPath+location+newFileName);
-                System.out.println("Path : "+newDoc.getPath());
-            }
-
-        } catch (Exception e) {
+        System.out.println("Cont nam : "+fileN);
+        System.out.println("File name : "+fileName);
+        String rootPath = System.getProperty("user.dir")+"\\"+req.getContextPath();
+        System.out.println("Root : "+req.getContextPath());
+        try{
+            BufferedOutputStream outputStream = new BufferedOutputStream(
+               new FileOutputStream(
+                     new File(rootPath+"\\webapp\\resources\\case_documents", file1.getOriginalFilename())));
+         outputStream.write(file1.getBytes());
+         outputStream.flush();
+         outputStream.close();
+        }catch(Exception e)
+        {
             e.printStackTrace();
         }
-        
-        boolean insert=psModel.insertCaseDoc(newDoc);
-        if(insert == true)
-            return "Successfully uploaded...";
-        else
-            return "Server error...";
+        return "Successfully uploaded...";
     }
 }
