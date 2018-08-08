@@ -194,6 +194,6 @@ public class PoliceStationController {
         if(insert == true)
             return "Successfully uploaded...";
         else
-            return "Server error...";
+             return "Server error...";
     }
 }
