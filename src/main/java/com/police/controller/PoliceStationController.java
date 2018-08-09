@@ -7,6 +7,7 @@ package com.police.controller;
 
 import com.police.entity.CaseDocuments;
 import com.police.entity.CaseRecord;
+import com.police.entity.CriminalRecord;
 import com.police.entity.PoliceStationUser;
 import com.police.model.PolicePSModel;
 import java.io.BufferedOutputStream;
@@ -195,5 +196,20 @@ public class PoliceStationController {
             return "Successfully uploaded...";
         else
              return "Server error...";
+    }
+    
+    @RequestMapping(value = "PoliceStation/addCriminal",method = RequestMethod.POST)
+    public @ResponseBody
+    String addCriminal(@RequestParam(value = "caseID:") String caseID,
+                        @RequestParam(value = "criminalName") String criminalName,
+                        @RequestParam(value = "criminalFather") String criminalFather,
+                        @RequestParam(value = "criminalBirth") String criminalBirth,
+                        @RequestParam(value = "address") String address,
+                        @RequestParam(value = "district") String district,
+                        @RequestParam(value = "division") String division,
+                        @RequestParam(value = "policeStation") String policeStation)
+    {
+        CriminalRecord criminal;
+        return "";
     }
 }
