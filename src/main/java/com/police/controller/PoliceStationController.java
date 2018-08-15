@@ -7,6 +7,7 @@ package com.police.controller;
 
 import com.police.entity.CaseDocuments;
 import com.police.entity.CaseRecord;
+import com.police.entity.CriminalCaseRecord;
 import com.police.entity.CriminalRecord;
 import com.police.entity.PoliceStationUser;
 import com.police.model.PolicePSModel;
@@ -14,9 +15,13 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -38,6 +43,7 @@ public class PoliceStationController {
     static HttpSession session;
     PolicePSModel psModel = new PolicePSModel();
 
+    
     public static void craeteLoginSession(PoliceStationUser user, HttpServletRequest req) {
         System.out.println("Session Created");
         user.setPassword("null");
@@ -47,6 +53,7 @@ public class PoliceStationController {
 
     }
 
+    
     public static boolean checkSession() {
         boolean login = false;
         PoliceStationUser user;
@@ -65,17 +72,20 @@ public class PoliceStationController {
         return login;
     }
 
+    
     @RequestMapping(value = "PoliceStation/dashBoard")
     public String viewDash() {
         return "PoliceStation/dashBoard";
     }
 
+    
     @RequestMapping(value = "PoliceStation/newCase", method = RequestMethod.GET)
     public String viewCaseInfoForm() {
 
         return "PoliceStation/newCase";
     }
 
+    
     @RequestMapping(value = "PoliceStation/newCase", method = RequestMethod.POST)
     public String insertCaseInfo(@ModelAttribute(value = "CaseRecord") CaseRecord newCase, Model model) {
 
@@ -98,6 +108,7 @@ public class PoliceStationController {
         }
     }
 
+    
     @RequestMapping(value = "PoliceStation/caseList", method = RequestMethod.GET)
     public String viewCaseList(Model m) {
         PoliceStationUser user = (PoliceStationUser) session.getAttribute("user");
@@ -108,6 +119,7 @@ public class PoliceStationController {
         return "PoliceStation/caseList";
     }
 
+    
     @RequestMapping(value = "PoliceStation/caseList", method = RequestMethod.POST)
     public String viewCaseListToDate(Model model, @RequestParam(value = "searchDate") String date) {
         PoliceStationUser user = (PoliceStationUser) session.getAttribute("user");
@@ -127,21 +139,29 @@ public class PoliceStationController {
         return "PoliceStation/caseList";
     }
 
+    
     @RequestMapping(value = "PoliceStation/CaseManagement")
     public String viewCaseManageMent(@RequestParam(value = "caseId") String caseId, Model model) {
         CaseRecord caseObj = psModel.getCaseRecordByCaseId(caseId);
+        
         List<CaseDocuments> caseDocList = psModel.getCaseDocByCaseId(caseId);
+        List<CriminalCaseRecord> cclist=psModel.getCriminalByCase(caseId);
+        
         System.out.println("Doc list Size : " + caseDocList.size());
         model.addAttribute("caseDocList", caseDocList);
         model.addAttribute("caseObj", caseObj);
+        model.addAttribute("cclist", cclist);
+       
         return "PoliceStation/CaseManagement";
     }
 
+    
     @RequestMapping(value = "addCaseDoc", method = RequestMethod.POST)
     public String addCaseDoc(@ModelAttribute(value = "CaseDocuments") CaseDocuments CaseDoc) {
         return "PoliceStation/CaseManagement";
     }
 
+    
     @RequestMapping(value = "PoliceStation/uploadCaseFile", method = RequestMethod.POST)
     public @ResponseBody
     String uploadCaseFile(@RequestParam(value = "file1") MultipartFile file1,
@@ -198,9 +218,10 @@ public class PoliceStationController {
              return "Server error...";
     }
     
-    @RequestMapping(value = "PoliceStation/addCriminal",method = RequestMethod.POST)
+    
+    @RequestMapping(value = "PoliceStation/addCriminal")
     public @ResponseBody
-    String addCriminal(@RequestParam(value = "caseID:") String caseID,
+    String addCriminal(@RequestParam(value = "caseID") String caseID,
                         @RequestParam(value = "criminalName") String criminalName,
                         @RequestParam(value = "criminalFather") String criminalFather,
                         @RequestParam(value = "criminalBirth") String criminalBirth,
@@ -209,7 +230,41 @@ public class PoliceStationController {
                         @RequestParam(value = "division") String division,
                         @RequestParam(value = "policeStation") String policeStation)
     {
-        CriminalRecord criminal;
-        return "";
+        CriminalRecord criminal=new CriminalRecord();
+        System.out.println("Got req...");
+        criminal.setAddress(address);
+        try {
+            criminal.setCriminalBirth(new SimpleDateFormat("yyyy-MM-dd").parse(criminalBirth));
+        } catch (ParseException ex) {
+            Logger.getLogger(PoliceStationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        criminal.setCriminalFather(criminalFather);
+        criminal.setCriminalId("CRIM"+psModel.getCriminalMaxId().add(BigDecimal.ONE));
+        criminal.setCriminalName(criminalName);
+        criminal.setDistrict(district);
+        criminal.setDivision(division);
+        criminal.setPoliceStation(policeStation);
+        
+        BigDecimal maxId=psModel.getCriminalMaxId();
+        System.out.println("Criminal max id : "+maxId);
+        
+        boolean insert=psModel.insertCriminalRec(criminal);
+        if(insert == true)
+        {
+            CriminalCaseRecord criminalCase=new CriminalCaseRecord();
+            criminalCase.setCriminalId(criminal.getCriminalId());
+            criminalCase.setCaseId(caseID);
+            criminalCase.setCriminalName(criminalName);
+            criminalCase.setStatus("Running");
+            
+            insert=psModel.insertCriminalCaseRec(criminalCase);
+            if(insert == true)
+                return "Criminal Added";
+            else
+                return "Error occured";
+        }
+            
+        else
+            return "Error occured";
     }
 }

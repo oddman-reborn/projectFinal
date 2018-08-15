@@ -22,6 +22,7 @@ public class CriminalCaseRecord implements java.io.Serializable {
     private BigDecimal id;
     private String criminalId;
     private String caseId;
+    private String criminalName;
     private String status;
 
     public CriminalCaseRecord() {
@@ -75,6 +76,15 @@ public class CriminalCaseRecord implements java.io.Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    @Column(name = "CRIMINAL_NAME", length = 100)
+    public String getCriminalName() {
+        return criminalName;
+    }
+
+    public void setCriminalName(String criminalName) {
+        this.criminalName = criminalName;
     }
 
 }

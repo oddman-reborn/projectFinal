@@ -3,7 +3,7 @@
 <body>
     <div class="container-fluid">
 
-
+        <%@include file="header.jsp" %>
 
         <div class="row">
             <%@include file="mainmenu.jsp" %>
@@ -74,7 +74,7 @@
                 }
 
 
-                $("#submitCriminalBtn").click(function () {
+                $("#formCriminal").submit(function () {
 
                     var caseID = $("#caseId").val();
                     var criminalName = $("#criminalName").val();
@@ -87,7 +87,7 @@
 
                     $.ajax({
                         type: "POST",
-                        url: "autoSearch",
+                        url: "addCriminal",
                         data: {
                             caseID: caseID,
                             criminalName: criminalName,
@@ -98,9 +98,11 @@
                             division: division,
                             policeStation: policeStation
                         },
-                        success: function (data, textStatus, jqXHR) {
 
-                            $("#responseMsg").val(data);
+                        success: function (data, textStatus, jqXHR) {
+                            var res = data.toString();
+                            $("#responseMsg").val(res);
+                            location.reload();
                         }
 
                     });
@@ -172,7 +174,7 @@
                         <h4 class="modal-title" style="color: #337ab7;text-align: center">Add Criminal </h4>
                     </div>
                     <div class="modal-body" style="color: #122B40">
-                        <form class="form-horizontal" action="#" enctype="multipart/form-data" method="POST" >
+                        <form class="form-horizontal" action="#" id="formCriminal" method="POST" >
                             <input type="hidden" value="${caseObj.caseId}" name="caseId" id="caseId">
 
                             <label class="col-md-3 control-label">Criminal Name : </label>
@@ -273,13 +275,13 @@
                                 <option value="Rangpur">Rangpur</option>
 
                             </select><br>
-                            <input type="hidden" name="policeStation" value="<%= user.getPsName()%>">
+                            <input type="hidden" name="policeStation" id="policeStation" value="<%= user.getPsName()%>" required>
                             <label class="col-md-3 control-label"> </label>
                             <input type="submit" class="btn btn-info" id="submitCriminalBtn"  value="Add">
                         </form>
 
                         <br>
-                        <p id="responseMsg" style="overflow: hidden;color: #e38d13;text-align: center"></p>
+                        
                     </div>
                     <div class="modal-footer">
 
@@ -335,7 +337,7 @@
                                     <tr>
                                         <td>${cd.fileName}</td>
                                         <td>${cd.fileType}</td>
-                                        <td><a href="${cd.path}"><button>Download</button></a></td>
+                                        <td><a href="${cd.path}"><button class="btn bg-primary">Download</button></a></td>
                                     </tr>
                                 </c:forEach>
                             </table>
@@ -350,6 +352,22 @@
 
                             <hr style="display: block;border-top: 1px solid #449D44;height: 1px;">
 
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Criminal ID</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <c:forEach items="${cclist}" var="cc">
+                                    <tr>
+                                        <td>${cc.criminalName}</td>
+                                        <td>${cc.criminalId}</td>
+                                        <td><a href=criminalManagement?id=${cc.criminalId}><button class="btn bg-primary">Manage</button></a></td>
+                                    </tr>
+                                </c:forEach>
+                            </table>
 
                         </div>
 

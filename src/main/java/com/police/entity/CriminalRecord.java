@@ -1,6 +1,7 @@
 package com.police.entity;
 // Generated Jul 30, 2018 12:35:18 PM by Hibernate Tools 4.3.1
 
+import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,7 +23,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 )
 public class CriminalRecord implements java.io.Serializable {
 
-    private long id;
+    private BigDecimal id;
     private String criminalId;
     private String criminalName;
     private String criminalFather;
@@ -35,12 +36,12 @@ public class CriminalRecord implements java.io.Serializable {
     public CriminalRecord() {
     }
 
-    public CriminalRecord(long id, String criminalId) {
+    public CriminalRecord(BigDecimal id, String criminalId) {
         this.id = id;
         this.criminalId = criminalId;
     }
 
-    public CriminalRecord(long id, String criminalId, String criminalName, String criminalFather, Date criminalBirth, String address, String district, String division, String policeStation) {
+    public CriminalRecord(BigDecimal id, String criminalId, String criminalName, String criminalFather, Date criminalBirth, String address, String district, String division, String policeStation) {
         this.id = id;
         this.criminalId = criminalId;
         this.criminalName = criminalName;
@@ -55,12 +56,12 @@ public class CriminalRecord implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CRIMINAL_RECORD_SEQ")
     @SequenceGenerator(name = "CRIMINAL_RECORD_SEQ", sequenceName = "CRIMINAL_RECORD_SEQ", allocationSize = 1)
-    @Column(name = "ID", unique = true, nullable = false, precision = 11, scale = 0)
-    public long getId() {
+    @Column(name = "ID", unique = true, nullable = false, precision = 20, scale = 0)
+    public BigDecimal getId() {
         return this.id;
     }
 
-    public void setId(long id) {
+    public void setId(BigDecimal id) {
         this.id = id;
     }
 
