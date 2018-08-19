@@ -8,7 +8,9 @@ package com.police.model;
 import com.police.entity.CaseDocuments;
 import com.police.entity.CaseRecord;
 import com.police.entity.CriminalCaseRecord;
+import com.police.entity.CriminalDocument;
 import com.police.entity.CriminalRecord;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -267,4 +269,93 @@ public class PolicePSModel {
         }
         return criminalName;
     }
+    
+    
+    public CriminalRecord getCriminalById(String criminalId)
+    {
+        CriminalRecord criminal=new CriminalRecord();
+        Session session=sf.openSession();
+        
+        try{
+            
+            Criteria crt=session.createCriteria(CriminalRecord.class);
+            crt.add(Restrictions.eq("criminalId", criminalId));
+            criminal=(CriminalRecord)crt.uniqueResult();
+            
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return criminal;
+    }
+    
+    
+    public List<CriminalCaseRecord> getCaseByCriminalId(String criminalId)
+    {
+        List<CriminalCaseRecord> crimCase=new ArrayList();
+        Session session=sf.openSession();
+        
+        try{
+            Criteria crt=session.createCriteria(CriminalCaseRecord.class);
+            crt.add(Restrictions.eq("criminalId", criminalId));
+            crimCase=crt.list();
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return crimCase;
+    }
+    
+    
+    public List<CriminalDocument> getCriminalDocByCriminalId(String criminalId)
+    {
+        List<CriminalDocument> crimDocList=new ArrayList();
+        Session session=sf.openSession();
+        
+        try{
+            Criteria crt=session.createCriteria(CriminalDocument.class);
+            crt.add(Restrictions.eq("criminalId", criminalId));
+            crimDocList=crt.list();
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return crimDocList;
+    }
+    
+    
+    public boolean insertCriminalDoc(CriminalDocument doc)
+    {
+        boolean insert=false;
+        Session session=sf.openSession();
+        
+        try{
+            session.beginTransaction();
+            session.save(doc);
+            session.getTransaction().commit();
+            insert=true;
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+            session.getTransaction().rollback();
+        }finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+        return insert;
+    }
+            
 }

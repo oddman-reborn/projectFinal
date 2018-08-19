@@ -15,7 +15,7 @@
 
 
             $(document).ready(function () {
-                $("#submitFormBtn").click(function () {
+                $("#fileForm").submit(function () {
                     uploadFile();
                     return false;
 
@@ -29,13 +29,13 @@
                     var file = _("file1").files[0];
 // alert(file.name+" | "+file.size+" | "+file.type);
                     var fileName = $("#fileName").val();
-                    var caseId = $("#caseId").val();
+                    var criminalId = $("#criminalId").val();
                     var fileType = $("#fileType").val();
 
                     var formdata = new FormData();
                     formdata.append("file1", file);
                     formdata.append("fileName", fileName);
-                    formdata.append("caseId", caseId);
+                    formdata.append("criminalId", criminalId);
                     formdata.append("fileType", fileType);
 
 
@@ -44,7 +44,7 @@
                     ajax.addEventListener("load", completeHandler, false);
                     ajax.addEventListener("error", errorHandler, false);
                     ajax.addEventListener("abort", abortHandler, false);
-                    ajax.open("POST", "uploadCaseFile");
+                    ajax.open("POST", "uploadCriminalFile");
                     ajax.send(formdata);
 
 
@@ -122,8 +122,8 @@
                         <h4 class="modal-title" style="color: #337ab7;text-align: center">Add Case File </h4>
                     </div>
                     <div class="modal-body" style="color: #122B40">
-                        <form class="form-horizontal" modelAttribute="CaseDocuments" action="#" enctype="multipart/form-data" method="POST">
-                            <input type="hidden" value="${caseObj.caseId}" name="caseId" id="caseId">
+                        <form class="form-horizontal" id="fileForm" action="#" enctype="multipart/form-data" method="POST">
+                            <input type="hidden" value="${criminal.criminalId}" name="criminalId" id="criminalId">
                             <label class="col-md-3 control-label">File Name : </label>
                             <input type="text" class="form-control" style="width: 350px" name="fileName" id="fileName" required>
                             <br>
@@ -132,7 +132,7 @@
                             <input class="form-control" style="width: 350px" type="file" name="file1" id="file1"  required> 
                             <br>
 
-                            <label class="col-md-3 control-label">File Type : </label>
+                            <label class="col-md-3 control-label">File Type :  </label>
                             <select class="form-control" name="fileType" id="fileType" style="width: 350px" required>
                                 <option value="">Select</option>
                                 <option value="Image">Image</option>
@@ -141,7 +141,7 @@
                             <br>
 
                             <label class="col-md-3 control-label"> </label>
-                            <input type="submit" class="btn btn-info" id="submitFormBtn"  value="ADD">
+                            <input type="submit" class="btn btn-info"  value="ADD">
                         </form>
 
                         <br>
@@ -297,7 +297,7 @@
 
         <div class="row">
             <div class="mainview" >
-                <h3 style="color: #122B40;text-align: center">Case Information <b style="color: #ff3333"># ${caseObj.caseId}</b></h3>
+                <h3 style="color: #122B40;text-align: center">Criminal Information <b style="color: #ff3333">${criminal.criminalName}</b></h3>
                 <div class="panel panel-default">
                     <div class="panel-body" style="color: #122B40;background-color: #F0F0F0;display: flex;width: 100%;min-height: 400px">
                         <div class="col-md-4" style="border-right: 1px dashed #449D44;min-height:inherit;flex: 1;"> 
@@ -306,20 +306,20 @@
 
                             <br>
                             <hr style="display: block;border-top: 1px solid #449D44;height: 1px;">
-
-                            <p><b>Victim : </b>Age : ${caseObj.victimAge}</p>
-                            <textarea style="width: 420px" readonly>${caseObj.victimName}</textarea>
-
-                            <p>
-                                <b>${caseObj.caseType}</b> committed on <b> ${caseObj.crimeDate}</b> and case filed on <b> ${caseObj.caseFileDate}</b>
-                                at <b> ${caseObj.crimeLocation}</b> .
-                            </p>
-                            <p>
-                                Investigating officer : <b> ${caseObj.investigatingOfficer}</b> 
-                            </p>
+                            
+                            <label>Name : </label><p>${criminal.criminalName}</p>
+                            <label>Father : </label><p>${criminal.criminalFather}</p>
+                            <label>Birth date : </label><p>${criminal.criminalBirth}</p>
+                            <label>Address : </label><p>${criminal.address}</p>
+                            <label>District: </label><p>${criminal.district}</p>
+                            <label>Division : </label><p>${criminal.division}</p>
+                            <label>PS : </label><p>${criminal.policeStation}</p>
+                            
+                            
+                            
                         </div>
                         <div class="col-md-4" style="border-right: 1px dashed #449D44;flex: 1;;min-height: inherit">
-                            <h4 style="color: #337ab7" class="col-md-4 control-label">Case Files </h4>
+                            <h4 style="color: #337ab7" class="col-md-4 control-label">Files </h4>
                             <button class="btn btn-info" data-toggle="modal" data-target="#addFileModel"  class="form-horizontal" style="float: right">Add</button>
                             <br>
 
@@ -330,14 +330,14 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Type</th>
-                                        <th>Action</th>
+                                        <th style="width: 80px">Action</th>
                                     </tr>
                                 </thead>
-                                <c:forEach items="${caseDocList}" var="cd">
+                                <c:forEach items="${crimDocList}" var="cd">
                                     <tr>
                                         <td>${cd.fileName}</td>
                                         <td>${cd.fileType}</td>
-                                        <td><a href="${cd.path}"><button class="btn bg-primary">Download</button></a></td>
+                                        <td><a href="download?file=${cd.filePath}"><button class="btn bg-primary">Download</button></a></td>
                                     </tr>
                                 </c:forEach>
                             </table>
@@ -345,7 +345,7 @@
                         </div>
                         <div class="col-md-4" style="min-height: inherit;flex: 1;">
 
-                            <h4 style="color: #337ab7" class="col-md-3 control-label">Criminals</h4>
+                            <h4 style="color: #337ab7" class="col-md-3 control-label">Cases</h4>
                             <button class="btn btn-info" data-toggle="modal" data-target="#addCriminalModel"   class="form-horizontal" style="float: right">Add</button>
 
                             <br>
@@ -355,16 +355,16 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Criminal ID</th>
-                                        <th>Action</th>
+                                        <th>Case ID</th>
+                                        <th>Status</th>
+                                        <th style="width: 80px">Action</th>
                                     </tr>
                                 </thead>
-                                <c:forEach items="${cclist}" var="cc">
+                                <c:forEach items="${crimCaseList}" var="cc">
                                     <tr>
-                                        <td>${cc.criminalName}</td>
-                                        <td>${cc.criminalId}</td>
-                                        <td><a href=CriminalManagement?id=${cc.criminalId}><button class="btn bg-primary">Manage</button></a></td>
+                                        <td>${cc.caseId}</td>
+                                        <td>${cc.status}</td>
+                                        <td><a href=CaseManagement?caseId=${cc.caseId}><button class="btn bg-primary">View</button></a></td>
                                     </tr>
                                 </c:forEach>
                             </table>

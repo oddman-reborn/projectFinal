@@ -8,22 +8,27 @@ package com.police.controller;
 import com.police.entity.CaseDocuments;
 import com.police.entity.CaseRecord;
 import com.police.entity.CriminalCaseRecord;
+import com.police.entity.CriminalDocument;
 import com.police.entity.CriminalRecord;
 import com.police.entity.PoliceStationUser;
 import com.police.model.PolicePSModel;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.io.IOUtils;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -180,7 +185,7 @@ public class PoliceStationController {
         
         try {
             if (newDoc.getFileType().contains("Image")) {
-                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\case_images";
+                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\case_images\\";
                 String newFileName=caseId + "_" + file1.getOriginalFilename();
                 
                 BufferedOutputStream outputStream = new BufferedOutputStream(
@@ -266,5 +271,97 @@ public class PoliceStationController {
             
         else
             return "Error occured";
+    }
+    
+    
+    @RequestMapping(value = "PoliceStation/CriminalManagement")
+    public String viewCriminalManagement(@RequestParam(value = "id") String crimId,Model model)
+    {
+        CriminalRecord criminal=psModel.getCriminalById(crimId);
+        System.out.println("Criminal name : "+criminal.getCriminalName()+"ID :"+crimId);
+        List<CriminalCaseRecord> crimCaseList=psModel.getCaseByCriminalId(crimId);
+        List<CriminalDocument> crimDocList=psModel.getCriminalDocByCriminalId(crimId);
+        
+        model.addAttribute("criminal", criminal);
+        model.addAttribute("crimCaseList", crimCaseList);
+        model.addAttribute("crimDocList", crimDocList);
+        
+        return "PoliceStation/CriminalManagement";
+    }
+    
+    
+    @RequestMapping(value = "PoliceStation/uploadCriminalFile", method = RequestMethod.POST)
+    public @ResponseBody
+    String uploadCriminalFile(@RequestParam(value = "file1") MultipartFile file1,
+            @RequestParam(value = "fileName") String fileName,
+            @RequestParam(value = "criminalId") String criminalId,
+            @RequestParam(value = "fileType") String fileType,
+            HttpServletRequest req) {
+        CriminalDocument newDoc = new CriminalDocument();
+        newDoc.setCriminalId(criminalId);
+        newDoc.setFileName(fileName);
+        newDoc.setFileType(fileType);
+        
+        String root = req.getRealPath("/");
+        String rootPath = root.substring(0, root.indexOf("OnlinePoliceStation"));
+        
+        try {
+            if (newDoc.getFileType().contains("Image")) {
+                System.out.println("Criminal Id : "+criminalId);
+                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\criminal_images\\";
+                String newFileName=criminalId + "_" + file1.getOriginalFilename();
+                
+                BufferedOutputStream outputStream = new BufferedOutputStream(
+                                                    new FileOutputStream(
+                                                    new File(rootPath + location, newFileName)));
+                outputStream.write(file1.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                
+                newDoc.setFilePath(rootPath+location+newFileName);
+                System.out.println("Path : "+newDoc.getFilePath());
+            } else {
+                String location = "OnlinePoliceStation\\src\\main\\webapp\\resources\\criminal_documents\\";
+                String newFileName=criminalId + "_" + file1.getOriginalFilename();
+                
+                BufferedOutputStream outputStream = new BufferedOutputStream(
+                                                    new FileOutputStream(
+                                                    new File(rootPath + location, newFileName)));
+                outputStream.write(file1.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                
+                newDoc.setFilePath(rootPath+location+newFileName);
+                System.out.println("Path : "+newDoc.getFilePath());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        boolean insert=psModel.insertCriminalDoc(newDoc);
+        if(insert == true)
+            return "Successfully uploaded...";
+        else
+             return "Server error...";
+    }
+    
+    
+    @RequestMapping(value = "PoliceStation/download")
+    public  @ResponseBody void downLoadFile(@RequestParam(value = "file") String path,HttpServletResponse response)
+    {
+        System.out.println("Download Path : "+path);
+        try {
+        DefaultResourceLoader loader = new DefaultResourceLoader();
+        InputStream is = loader.getResource(path).getInputStream();
+        IOUtils.copy(is, response.getOutputStream());
+        
+        response.flushBuffer();
+        is.close();
+    } catch (IOException ex) {
+        
+        ex.printStackTrace();
+    }
+        
     }
 }
